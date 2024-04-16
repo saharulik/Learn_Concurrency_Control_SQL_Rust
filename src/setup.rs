@@ -3,7 +3,7 @@
 use sea_orm::*;
 
 // Replace with your database URL and database name
-const DATABASE_URL: &str = "postgres://root:root@localhost:5432";
+const DATABASE_URL: &str = "postgres://root:password@localhost:5432";
 const DB_NAME: &str = "bakeries_db";
 
 pub(super) async fn set_up_db() -> Result<DatabaseConnection, DbErr> {
@@ -23,7 +23,7 @@ pub(super) async fn set_up_db() -> Result<DatabaseConnection, DbErr> {
         DbBackend::Postgres => {
             db.execute(Statement::from_string(
                 db.get_database_backend(),
-                format!("CREATE DATABASE IF NOT EXISTS \"{}\";", DB_NAME),
+                format!("DROP DATABASE IF EXISTS \"{}\";", DB_NAME),
             ))
             .await?;
             db.execute(Statement::from_string(
@@ -31,17 +31,12 @@ pub(super) async fn set_up_db() -> Result<DatabaseConnection, DbErr> {
                 format!("CREATE DATABASE \"{}\";", DB_NAME),
             ))
             .await?;
-            
+                
             let url = format!("{}/{}", DATABASE_URL, DB_NAME);
             Database::connect(&url).await?
         }
         DbBackend::Sqlite => db,
     };
-    let schema_manager = SchemaManager::new(db); // To investigate the schema
     
-    Migrator::refresh(db).await?;
-    assert!(schema_manager.has_table("bakery").await?);
-    assert!(schema_manager.has_table("chef").await?);    
-        
     Ok(db)
 }

@@ -16,7 +16,7 @@ mod migrator;
 async fn index() -> &'static str {
     "Hello, bakeries!"
 }
-
+/*
 #[get("/bakeries")]
 async fn bakeries(db: &State<DatabaseConnection>) -> Json<Vec<String>> {
     let db = db as &DatabaseConnection;
@@ -32,9 +32,9 @@ async fn bakeries(db: &State<DatabaseConnection>) -> Json<Vec<String>> {
         
     Json(bakery_names)
 } 
-
-async fn run(db: DatabaseConnection) -> Result<(), DbErr> {
-    // let db = Database::connect(DATABASE_URL).await?;
+*/
+async fn run(db: &DatabaseConnection) -> Result<(), DbErr> {
+    let db = db as &DatabaseConnection;
     
     let schema_manager = SchemaManager::new(db); // To investigate the schema
     
@@ -53,10 +53,10 @@ async fn rocket() -> _ {
      Err(err) => panic!("{}", err),
     }; 
     
-    if let Err(err) = block_on(run(db)) {
+    if let Err(err) = block_on(run(&db)) {
         panic!("{}", err);
     }
-        
+
     rocket::build()
         .manage(db)
         .mount(
